@@ -1,0 +1,36 @@
+{
+  "type" : "page",
+  "id"   : "pageB",
+  
+  "template" : "parallax",
+  
+  "title" : "Example page B",
+
+  "copyright" : "Your Website 2017",
+
+  "customize" : {
+  
+     "heroshot"     : "https://placehold.it/900x400",
+	 "headline"     : "your usp's",
+  	 "subheadline"  : "explanation of your usp's",
+
+     "calltoaction" : "the call of action",
+	 "calltoactionhref" : "https://www.frittenburger.de",
+   
+     "usp1_headline" : "your first usp",
+	 "usp1_image"    : "https://placehold.it/600x400",
+	 "usp1_text"     : "explain your usp",
+   
+   
+   
+     "usp2_headline" : "your second usp",
+	 "usp2_image"    : "https://placehold.it/600x400",
+	 "usp2_text"     : "explain your usp",
+	 
+	 "socialproof_image" : "https://placehold.it/600x400",
+	 "socialproof_name"  : "Firstname lastname",
+	 "socialproof_quote" : "quote of social proof"
+  }
+  
+  
+}
