@@ -31,8 +31,8 @@ class Bootstrap {
 	   //User id
 	   $guid = GUID();
 	   
-       if(isset($_COOKIE["dialogo"])) {
-         $guid = $_COOKIE["dialogo"];
+       if(isset($_COOKIE["userid"])) {
+         $guid = $_COOKIE["userid"];
        }
 
 	   
@@ -61,7 +61,7 @@ class Bootstrap {
 	   $templateSkin = $config['template'];
 	   
 	   
-   	   setcookie("dialogo", $guid, time() + (86400 * 30), "/"); // 86400 = 1 day
+   	   setcookie("userid", $guid, time() + (86400 * 30), "/"); // 86400 = 1 day
 	   setcookie("pageid", $pageId, time() + (86400 * 30), "/"); // 86400 = 1 day
 
 	
