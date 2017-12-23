@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{$title}</title>
+
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  <link href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+</head>
+<body>
+  
+  <div class="container">
+    <div class="section">
+
+      <!--   Icon Section   -->
+      <div class="row">
+      
+
+        <div class="col s12 m12">
+          <div class="icon-block">
+		  	<h3>Impressum</h3>
+            <p>{$impressum}</p>
+			
+			<h5>Datenschutzhinweis:</h5>
+				<p>Ihre personenbezogenen Daten werden bei uns vertraulich behandelt. Ihre pers&ouml;nlichen Daten, die Sie uns im Rahmen der Websitenutzung zur Verf&uuml;gung stellen, 
+				werden bei uns gespeichert und im Rahmen der Websitenutzung verarbeitet. Hier handelt es sich in der Regel um Ihre E-Mail-Adresse und Ihre Telefonnummer. </p>
+				<p><br />Unsere Homepage benutzt Google Analytics, einen Webanalysedienst von Google. Google Analytics verwendet so genannte Cookies (kleine Textdateien), 
+				die auf Ihrem Computer gespeichert werden und die eine Analyse der Benutzung der Website durch Sie erm&ouml;glichen. Die durch die Cookie erzeugten Informationen 
+				&uml;ber Ihre Benutzung dieser Homepage (einschließlich Ihrer IP-Adresse) werden an einen Server von Google in den USA &uuml;bertragen und dort gespeichert. Google 
+				wird diese Informationen benutzen, um Ihre Nutzung der Website auszuwerten, um Reports über die Websiteaktivitäten für die Homepage-Betreiber zusammenzustellen 
+				und um weitere mit der Websitenutzung und der Internetnutzung verbundene Dienstleistungen zu erbringen. Auch wird Google diese Informationen gegebenenfalls an 
+				Dritte &uml;bertragen, sofern dieses gesetzlich vorgeschrieben ist oder soweit Dritte diese Daten im Auftrag von Google verarbeiten. Google wird in keinem Fall Ihre 
+				IP-Adresse mit anderen Daten von Google in Verbindung bringen. Sie k&ouml;nnen die Installation der Cookies durch eine entsprechende Einstellung in Ihrer Browser-Software 
+				verhindern, wir weisen Sie jedoch darauf hin, dass Sie in diesem Fall gegebenenfalls nicht s&auml;mtliche Funktionen dieser Website in vollem Umfang nutzen k&ouml;nnen. Durch die 
+				Nutzung unserer Homepage erkl&auml;ren Sie sich mit der Bearbeitung, der &uuml;ber Sie erhobenen Daten durch Google, in der zuvor beschriebenen Art und Weise und zu dem zuvor 
+				benannten Zweck einverstanden.</p>
+
+			<a href="/" id="download-button" class="btn-large waves-effect waves-light teal lighten-1">Startseite</a>
+		  </div>
+        </div>
+
+		  
+      </div>
+
+    </div>
+  </div>
+
+
+  
+  <footer class="page-footer teal">
+    <div class="footer-copyright">
+      <div class="container">
+      Copyright &copy; {$copyright}
+      </div>
+    </div>
+  </footer>
+
+
+  <!--  Scripts-->
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="js/materialize.js"></script>
+  <script src="js/init.js"></script>
+
+  <div id="config" style="display:none;" data-guid="{$guid}">&nbsp;</div>
+  <script src="js/tracking.js"></script>
+
+  {$analytics}
+
+
+  </body>
+</html>

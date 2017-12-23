@@ -1,21 +1,23 @@
 <?php
 
 
+    define("SALT",'3dRt7MwZnCuFoAa');
+    
     require_once 'Template.class.php';
     require_once 'Tracking.class.php';
+    require_once 'EmailSender.class.php';
 
-    function GUID()
-    {
-        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
-    }
+   
+   
 
 	$themes = array();
 	require_once 'iTheme.interface.php';
     require_once __DIR__.'/../templates/parallax.php';	
+    require_once __DIR__.'/../templates/parallaxEmail.php';	
     require_once __DIR__.'/../templates/small-business.php';
 
   
-
+  
 
 class Bootstrap {
 
@@ -29,12 +31,14 @@ class Bootstrap {
 	   $url = strtok($_SERVER["REQUEST_URI"],'?');	
 	   
 	   //User id
-	   $guid = GUID();
+	   $guid = self::generateGuid();
 	   
        if(isset($_COOKIE["userid"])) {
          $guid = $_COOKIE["userid"];
        }
 
+	  
+	   
 	   
 	   //Skin
 
@@ -47,7 +51,7 @@ class Bootstrap {
 	   foreach ($_GET as $key => $value) { 
 			switch($key)
 			{
-				case "id":
+				case "pageid":
 				  $pageId = $value;
 				  break;
 			}
@@ -55,10 +59,12 @@ class Bootstrap {
 	   	
 	   $configPath = realpath($publicPath . '/../config')."/";
 	
-	   $config = self::readPageConfig($configPath,$url,$pageId);
+	   $pageConfig = self::readPageConfig($configPath,$pageId);
 	 	   
-	   $pageId = $config['id'];
-	   $templateSkin = $config['template'];
+	   $SALT = self::readSalt($configPath);	   
+		   
+	   $pageId = $pageConfig['id'];
+	   $templateSkin = $pageConfig['template'];
 	   
 	   
    	   setcookie("userid", $guid, time() + (86400 * 30), "/"); // 86400 = 1 day
@@ -112,12 +118,9 @@ class Bootstrap {
 	   }
 	   
 	   
-
-       $tracking = new Tracking($guid,$logPath);
-	   
-
+	   //Tracking
+	   $tracking = new Tracking($guid,$logPath);
        $tracking->raise("REQUEST","request ".$_SERVER['REQUEST_URI']);
-	   
 	   if(isset($_SERVER['HTTP_REFERER'])) {
 			$tracking->set("HTTP_REFERER",$_SERVER['HTTP_REFERER']);
 	   }
@@ -126,29 +129,104 @@ class Bootstrap {
        if(isset($_SERVER['HTTP_USER_AGENT'])) {
           $tracking->set("HTTP_USER_AGENT",$_SERVER['HTTP_USER_AGENT']);
        }
-	  
 	   
-       //deliver Index
-       $index = new Template($templatePath);
+	   $pageIndex = substr($url,1); //If $url == "" wird false zurückgegeben
 	   
-	   $themes[$templateSkin]->customize($index,$config['customize']);
-	   $index->assign("title",$config['title']);
-	   $index->assign("copyright",$config['copyright']);
+	   //Email
+	   if($url == "/email")
+	   {
+		   //Formular
+		   if ( isset( $_POST['email'] ) && isset( $_POST['name'] ) && filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) ) {
+								
+				$email = $_POST['email'];
+				
+				//Create Link
+				$key = sha1( $email.$SALT );
+				$link = $pageConfig['url'] . '/email?email=' . $email . '&key=' . $key;
+
+				//tracking
+				$tracking->raise("EMAIL","new email ".$email);
+
+				$emailSender = new EmailSender($pageConfig['email']);
+				$emailSender->mailTo($email);
+				
+				$mailBody = new Template($templatePath);
+				$themes[$templateSkin]->customizeSubscription($mailBody,$emailSender,$pageConfig['subscription'],$link);
+				
+				//Impressum
+				$impressum = "";
+				$impressum = file_get_contents($configPath . "impressum.txt");
+				$mailBody->assign("impressum",$impressum);
+				
+				$emailSender->body($mailBody->html());
+				$emailSender->send();
+
+			    $pageIndex = "notificationSendOptIn";
+
+		   }
+		   
+		   //Validation Klick
+		   if ( isset( $_GET['key'] ) && isset( $_GET['email'] ) ) {
+
+			  // If we have 'email' and 'key' parameters, we are handling an opt-in click
+			  $email = $_GET['email'];
+
+			  // Check if key matches hash of email and salt combination and if email is really an email
+			  if ( sha1( $email.$SALT ) == $_GET['key'] && filter_var($email, FILTER_VALIDATE_EMAIL) ) {
+				  
+				//tracking
+				$tracking->raise("EMAIL","confirmed email ".$email);
+
+				$emailSender = new EmailSender($pageConfig['email']);
+				$emailSender->mailToAdmin();
+				$emailSender->subject("new dialogo user");
+				$emailSender->body("new mail: ".$email);
+				$emailSender->send();
+					
+			    $pageIndex = "notificationConfirmOptIn";
+
+			  }
+		   }
+
+		   
+	   }
+	 
+
+       //Deliver 
+       $template = new Template($templatePath);
+
+
+	   switch($pageIndex)
+	   {
+		   case "":
+			   //Index
+			   $themes[$templateSkin]->customizeIndex($template,$pageConfig['index']);
+		       break;
+		   case "impressum":
+		       //Index
+			   $impressum = "";
+			   $impressum = file_get_contents($configPath . "impressum.txt");
+			   $themes[$templateSkin]->customizeImpressum($template,$impressum);
+		       break;
+		   case (preg_match('/notification.*/', $pageIndex) ? true : false) :
+			   //Confirmation
+			   $themes[$templateSkin]->customizeNotification($template,$pageConfig[$pageIndex]);
+		   break;
+	   }
+	   
+	   
+	   $template->assign("title",$pageConfig['title']);
+	   $template->assign("copyright",$pageConfig['copyright']);
 
 	   
-	   
+	   //Analytis
 	   $analytics = "";
 	   $analytics = file_get_contents($configPath . "analytics.txt");
-
-	   $index->assign("analytics",$analytics);
+	   $template->assign("analytics",$analytics);
 	   
+       $template->assign( "guid", $guid );
 	   
-       $index->assign( "guid", $guid );
-       echo $index->html();
-	
-	
-	
-	    
+       echo $template->html();
 		
 	}
 	
@@ -223,7 +301,7 @@ class Bootstrap {
 		 
 	 }
 
-	 public static function readPageConfig($configPath,$url,$id)
+	 public static function readPageConfig($configPath,$id)
 	 {		
 		$pages = array();
 
@@ -233,7 +311,6 @@ class Bootstrap {
 		  $ext = pathinfo($file, PATHINFO_EXTENSION);
 		  if($ext != "json") continue;
 			
-		 
 		  $content = file_get_contents($configPath . $file);
 		  $json = json_decode($content, true);
 		 
@@ -255,12 +332,34 @@ class Bootstrap {
 		  
 		}
 		
-		
-		
 		//random
 		return $pages[mt_rand(0, count($pages) - 1)];
 	 }
 	 
+	 public static function readSalt($configPath)
+	 {		
+
+		 if(file_exists($configPath . "salt.json") == false)
+		 {
+			$salt = array();
+	        $salt['type'] = "salt";
+			$salt['salt'] = uniqid(mt_rand(), true);
+			file_put_contents($configPath . "salt.json", json_encode($salt, JSON_PRETTY_PRINT));
+            
+		 }
+			
+			
+		 $content = file_get_contents($configPath . "salt.json");
+		 $json = json_decode($content, true);
+		 
+		  
+  		 return $json['salt'];
+	 }
+	 
+	 public static function generateGuid()
+	 {
+		   return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
+	 }
 }
 
 ?>

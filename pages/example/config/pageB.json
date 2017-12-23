@@ -8,7 +8,16 @@
 
   "copyright" : "Your Website 2017",
 
-  "customize" : {
+  "url" : "https://www.example.org",
+
+  "email" : {
+  
+	"admin"   : "you@example.org",
+	"noreply" : "noreply@example.org"
+	
+  },
+  
+  "index" : {
   
      "heroshot"     : "https://placehold.it/900x400",
 	 "headline"     : "your usp's",
